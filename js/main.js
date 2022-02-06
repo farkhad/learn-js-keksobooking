@@ -1,0 +1,45 @@
+/* Возвращает случайное целое число из переданного диапазона включительно
+   Решение https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random#getting_a_random_integer_between_two_values_inclusive
+*/
+const getRandomInt = (min, max) => {
+  if (min < 0 || max < 0) {
+    return -1;
+  }
+
+  min = Math.ceil(min);
+  max = Math.floor(max);
+
+  if (max < min) {
+    [min, max] = [max, min];
+  }
+
+  return Math.floor(Math.random() * (max - min + 1) + min); //The maximum is inclusive and the minimum is inclusive
+}
+
+/* Возвращает случайное число с плавающей точкой
+   с указанным количеством знаков после запятой
+   из переданного диапазона включительно.
+   Решение
+   https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random#getting_a_random_number_between_two_values
+   https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toFixed
+   https://stackoverflow.com/questions/1527803/generating-random-whole-numbers-in-javascript-in-a-specific-range
+   https://discord.com/channels/874632952691191838/874638732140101662/939926374863474729
+*/
+const getRandomFloat = (min, max, precision = 0) => {
+  if (min < 0 || max < 0) {
+    return -1;
+  }
+
+  // @todo доделать
+  if (precision === 0) {
+    const coef = 10 ** precision;
+    max = Math.floor(max * coef) / coef;
+    min = Math.ceil(min * coef) / coef;
+  }
+
+  if (max < min) {
+    [min, max] = [max, min];
+  }
+
+  return Number((Math.random() * (max - min + (precision ? 0 : 1)) + min).toFixed(precision));
+};
