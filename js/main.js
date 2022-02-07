@@ -30,7 +30,6 @@ const getRandomFloat = (min, max, precision = 0) => {
     return -1;
   }
 
-  // @todo доделать
   if (precision === 0) {
     const coef = 10 ** precision;
     max = Math.floor(max * coef) / coef;
@@ -41,5 +40,5 @@ const getRandomFloat = (min, max, precision = 0) => {
     [min, max] = [max, min];
   }
 
-  return Number((Math.random() * (max - min + (precision ? 0 : 1)) + min).toFixed(precision));
+  return Number((Math.random() * (max - min) + min).toFixed(precision));
 };
