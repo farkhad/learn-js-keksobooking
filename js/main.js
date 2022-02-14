@@ -117,7 +117,7 @@ const adSampleData = {
  * @param array randomArray
  * @returns mixed
  */
-const getRandomArrayElement = (randomArray) => randomArray[getRandomInt(0, randomArray.length - 1)];
+const getRandomArrayElement = (arr) => arr[getRandomInt(0, arr.length - 1)];
 
 /**
  * Получить массив строк — массив случайной длины из значений:
@@ -196,7 +196,6 @@ const createAd = (idx = 0) => {
  * Получить массив из 10 сгенерированных объектов.
  * Каждый объект массива — описание похожего объявления неподалёку.
  *
- * @param {int} numberOfAds
  * @returns array
  */
 const getAdSampleData = () => new Array(AD_COUNT)
