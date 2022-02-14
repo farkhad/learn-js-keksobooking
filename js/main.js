@@ -112,6 +112,20 @@ const adSampleData = {
 };
 
 /**
+ * Возвращает объект — местоположение в виде географических координат. Состоит из двух полей:
+ * x, число с плавающей точкой — широта, случайное значение от 35.65000 до 35.70000
+ * y, число с плавающей точкой — долгота, случайное значение от 139.70000 до 139.80000
+ *
+ * @returns Object
+ */
+const getRandomLocation = () => {
+  return {
+    x: getRandomFloat(Location.X.MIN, Location.X.MAX, Location.X.PRECISION),
+    y: getRandomFloat(Location.Y.MIN, Location.Y.MAX, Location.Y.PRECISION),
+  }
+};
+
+/**
  * Получить случайный элемент массива
  *
  * @param array randomArray
@@ -165,8 +179,7 @@ const getRandomFeatures = () => {
  * @returns Object
  */
 const createAd = (idx = 0) => {
-  const locationX = getRandomFloat(Location.X.MIN, Location.X.MAX, Location.X.PRECISION);
-  const locationY = getRandomFloat(Location.Y.MIN, Location.Y.MAX, Location.Y.PRECISION);
+  const location = getRandomLocation();
 
   return {
     author: {
@@ -174,7 +187,7 @@ const createAd = (idx = 0) => {
     },
     offer: {
       title: getRandomArrayElement(adSampleData.offer.titles),
-      address: locationX + ' ' + locationY,
+      address: location.x + ' ' + location.y,
       price: getRandomInt(Price.MIN, Price.MAX),
       type: getRandomArrayElement(adSampleData.types),
       rooms: getRandomInt(Rooms.MIN, Rooms.MAX),
@@ -185,10 +198,7 @@ const createAd = (idx = 0) => {
       description: getRandomArrayElement(adSampleData.offer.descriptions),
       photos: getRandomPhotos(),
     },
-    location: {
-      x: locationX,
-      y: locationY,
-    },
+    location,
   };
 };
 
