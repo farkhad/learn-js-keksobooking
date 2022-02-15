@@ -99,7 +99,7 @@ const getRandomFeatures = () => {
   } else {
     while (randomFeaturesNumber--) {
       let randomFeature = getRandomArrayElement(adSampleData.features);
-      if (features.some((feature) => feature === randomFeature)) {
+      if (features.includes(randomFeature)) {
         randomFeaturesNumber++;
       } else {
         features.push(randomFeature);
@@ -121,7 +121,7 @@ const createAd = (idx = 0) => {
 
   return {
     author: {
-      avatar: 'img/avatars/user' + ((idx + 1) < AD_COUNT ? '0' : '') + (idx + 1) + '.png',
+      avatar: 'img/avatars/user' + ((idx + 1) < 10 ? '0' : '') + (idx + 1) + '.png',
     },
     offer: {
       title: getRandomArrayElement(adSampleData.offer.titles),
