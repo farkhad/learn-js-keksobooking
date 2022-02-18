@@ -61,4 +61,16 @@ const getRandomFloat = (min, max, precision = 0) => {
  */
 const getRandomArrayElement = (arr) => arr[getRandomInt(0, arr.length - 1)];
 
-export { getRandomInt, getRandomFloat, getRandomArrayElement };
+/**
+ * Formats number with enclosed thousands separator
+ * https://stackoverflow.com/questions/2901102/how-to-print-a-number-with-commas-as-thousands-separators-in-javascript
+ *
+ * @param Number x
+ * @param String sep
+ * @returns String
+ */
+const formatNumber = (x, sep = '') => {
+  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, sep);
+}
+
+export { getRandomInt, getRandomFloat, getRandomArrayElement, formatNumber };
