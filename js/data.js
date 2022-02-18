@@ -146,8 +146,8 @@ const createAd = (idx = 0) => {
  *
  * @returns array
  */
-const getAdSampleData = () => new Array(AD_COUNT)
+const createAds = () => new Array(AD_COUNT)
   .fill(null)
   .map((el, idx) => createAd(idx));
 
-export { getAdSampleData };
+export { createAds };

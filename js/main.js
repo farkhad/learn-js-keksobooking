@@ -1,3 +1,1 @@
-import { getAdSampleData } from './data.js';
-
-getAdSampleData();
+import './card.js';
