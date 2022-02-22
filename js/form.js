@@ -72,6 +72,7 @@ const contentLoadHandler = () => updateMinPrice();
 
 /**
  * Callback function for onSubmit event of the form
+ *
  * @param Object evt
  * @returns Boolean
  */

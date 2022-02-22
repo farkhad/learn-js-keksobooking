@@ -1,5 +1,3 @@
-import { createAds } from './data.js';
-
 const PRICE_DESCRIPTION = '₽/ночь';
 
 const housingType = {
@@ -14,6 +12,8 @@ const cardTemplate = document.querySelector('#card').content.querySelector('.pop
 const priceDescription = document.createElement('span');
 priceDescription.textContent = ` ${PRICE_DESCRIPTION}`;
 
+const hideElement = (element) => element.classList.add('hidden');
+
 /**
  * Renders advertisment from html template
  *
@@ -23,41 +23,91 @@ priceDescription.textContent = ` ${PRICE_DESCRIPTION}`;
 const renderAd = (ad) => {
   const card = cardTemplate.cloneNode(true);
 
-  const priceField = card.querySelector('.popup__text--price');
+  const price = card.querySelector('.popup__text--price');
 
-  const features = card.querySelector('.popup__features').children;
+  const featuresList = card.querySelector('.popup__features');
+  const features = featuresList.querySelectorAll('.popup__feature');
 
   const photos = card.querySelector('.popup__photos');
   const photoTemplate = photos.querySelector('.popup__photo');
   const photosFragment = document.createDocumentFragment();
 
-  card.querySelector('.popup__title').textContent = ad.offer.title;
-  card.querySelector('.popup__text--address').textContent = ad.offer.address;
+  const title = card.querySelector('.popup__title');
+  const address = card.querySelector('.popup__text--address');
+  const type = card.querySelector('.popup__type');
+  const capacity = card.querySelector('.popup__text--capacity');
+  const time = card.querySelector('.popup__text--time');
+  const description = card.querySelector('.popup__description');
+  const avatar = card.querySelector('.popup__avatar');
 
-  // Б27. Для вставки пользовательских строк (имён, фамилий и так далее) использован textContent
-  priceField.textContent = ad.offer.price;
-  priceField.appendChild(priceDescription.cloneNode(true));
-
-  card.querySelector('.popup__type').textContent = housingType[ad.offer.type];
-  card.querySelector('.popup__text--capacity').textContent = `${ad.offer.rooms} комнаты для ${ad.offer.guests} гостей`;
-  card.querySelector('.popup__text--time').textContent = `Заезд после ${ad.offer.checkin}, выезд до ${ad.offer.checkout}`;
-
-  for (let i = 0; i < features.length; i++) {
-    features[i].classList.add('hidden');
+  if (ad.offer.title) {
+    title.textContent = ad.offer.title;
+  } else {
+    hideElement(title);
   }
-  ad.offer.features.forEach((feature) => card.querySelector(`.popup__feature--${feature}`).classList.remove('hidden'));
 
-  card.querySelector('.popup__description').textContent = ad.offer.description;
+  if (ad.offer.address) {
+    address.textContent = ad.offer.address;
+  } else {
+    hideElement(address);
+  }
 
-  ad.offer.photos.forEach((photoUrl) => {
-    const photo = photoTemplate.cloneNode(false);
-    photo.src = photoUrl;
-    photosFragment.appendChild(photo);
-  });
-  photoTemplate.remove();
-  photos.appendChild(photosFragment);
+  if (ad.offer.price) {
+    // Б27. Для вставки пользовательских строк (имён, фамилий и так далее) использован textContent
+    price.textContent = ad.offer.price;
+    price.appendChild(priceDescription.cloneNode(true));
+  } else {
+    hideElement(price);
+  }
 
-  card.querySelector('.popup__avatar').src = ad.author.avatar;
+  if (ad.offer.type) {
+    type.textContent = housingType[ad.offer.type];
+  } else {
+    hideElement(type);
+  }
+
+  if (ad.offer.rooms || ad.offer.guests) {
+    capacity.textContent = `${ad.offer.rooms} комнаты для ${ad.offer.guests} гостей`;
+  } else {
+    hideElement(capacity);
+  }
+
+  if (ad.offer.checkin || ad.offer.checkout) {
+    time.textContent = `Заезд после ${ad.offer.checkin}, выезд до ${ad.offer.checkout}`;
+  } else {
+    hideElement(time);
+  }
+
+  if (ad.offer.features.length) {
+    features.forEach((feature) => hideElement(feature));
+    ad.offer.features.forEach((feature) => card.querySelector(`.popup__feature--${feature}`).classList.remove('hidden'));
+  } else {
+    hideElement(featuresList);
+  }
+
+  if (ad.offer.description) {
+    description.textContent = ad.offer.description;
+  } else {
+    hideElement(description);
+  }
+
+  if (ad.offer.photos.length) {
+    ad.offer.photos.forEach((photoUrl) => {
+      const photo = photoTemplate.cloneNode(false);
+      photo.src = photoUrl;
+      photosFragment.appendChild(photo);
+    });
+    photoTemplate.remove();
+    photos.appendChild(photosFragment);
+  } else {
+    hideElement(photos);
+  }
+
+  if (ad.author.avatar) {
+    avatar.src = ad.author.avatar;
+  } else {
+    hideElement(avatar);
+  }
 
   return card;
 };
@@ -65,10 +115,10 @@ const renderAd = (ad) => {
 /**
  * Renders advertisements
  *
+ * @param Array ads
  * @returns DocumentFragment
  */
-const renderAds = () => {
-  const ads = createAds();
+const renderAds = (ads = []) => {
   const cardsFragment = document.createDocumentFragment();
 
   ads.forEach((ad) => cardsFragment.appendChild(renderAd(ad)));
@@ -78,5 +128,4 @@ const renderAds = () => {
   return cardsFragment;
 };
 
-const ads = renderAds();
-document.querySelector('#map-canvas').appendChild(ads.children[0]);
+export { renderAd };
