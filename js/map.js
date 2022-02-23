@@ -19,8 +19,20 @@ const MapConfig = {
 }
 
 const adForm = document.querySelector('.ad-form');
-const mapFilterForm = document.querySelector('.map__filters');
+const filterForm = document.querySelector('.map__filters');
 const addrField = adForm.querySelector('#address');
+const resetButton = adForm.querySelector('.ad-form__reset');
+
+const mainPinIcon = L.icon({
+  iconUrl: MapConfig.MAIN_PIN_URL,
+  iconSize: MapConfig.MAIN_ICON_SIZE,
+  iconAnchor: MapConfig.MAIN_ICON_ANCHOR,
+});
+
+const mainPinMarker = L.marker(MapConfig.TOKYO, {
+  icon: mainPinIcon,
+  draggable: true,
+});
 
 let map;
 
@@ -46,12 +58,12 @@ const setAdFormDisabledTo = (isDisabled = true) => {
  */
 const setFilterFormDisabledTo = (isDisabled = true) => {
   if (isDisabled) {
-    mapFilterForm.classList.add('map__filters--disabled');
+    filterForm.classList.add('map__filters--disabled');
   } else {
-    mapFilterForm.classList.remove('map__filters--disabled');
+    filterForm.classList.remove('map__filters--disabled');
   }
-  mapFilterForm.querySelectorAll('.map__filter').forEach((element) => element.disabled = isDisabled);
-  mapFilterForm.querySelector('.map__features').disabled = isDisabled;
+  filterForm.querySelector('.map__features').disabled = isDisabled;
+  filterForm.querySelectorAll('.map__filter').forEach((element) => element.disabled = isDisabled);
 };
 
 const setAddress = (addr = MapConfig.TOKYO) => addrField.value = addr.join(', ');
@@ -64,7 +76,6 @@ const mapLoadHandler = () => {
   5.10. Форма, с помощью которой производится фильтрация похожих объявлений на момент открытия страницы, заблокирована и становится доступной только после окончания загрузки всех похожих объявлений, которые в свою очередь начинают загружаться только после загрузки и успешной инициализации карты.
   */
   addMainPinMarker();
-  setAddress(MapConfig.TOKYO);
 
   setAdFormDisabledTo(false);
 
@@ -103,19 +114,10 @@ const initMap = () => {
  * Устанавливает главную метку на карту
  */
 const addMainPinMarker = () => {
-  const mainPinIcon = L.icon({
-    iconUrl: MapConfig.MAIN_PIN_URL,
-    iconSize: MapConfig.MAIN_ICON_SIZE,
-    iconAnchor: MapConfig.MAIN_ICON_ANCHOR,
-  });
-
-  const mainPinMarker = L.marker(MapConfig.TOKYO, {
-    icon: mainPinIcon,
-    draggable: true,
-  });
   mainPinMarker.addTo(map);
-
   mainPinMarker.on('moveend', mainPinMarkerMoveEndHandler);
+
+  setAddress(MapConfig.TOKYO);
 };
 
 const addMarkers = () => {
@@ -133,8 +135,31 @@ const addMarkers = () => {
   });
 }
 
+/**
+ * Callback when user clicks "Reset" button
+ *
+ * @param Event evt
+ */
+const resetButtonClickHandler = (evt) => {
+  evt.preventDefault();
+
+  adForm.reset();
+  filterForm.reset();
+
+  map.closePopup();
+  mainPinMarker.setLatLng(MapConfig.TOKYO);
+
+  // instead of mainPinMarker.fire('moveend');
+  setAddress(MapConfig.TOKYO);
+
+  // instead of map.setView(...);
+  map.flyTo(MapConfig.TOKYO, MapConfig.MAX_ZOOM_LEVEL);
+}
+
 const contentLoadHandler = () => {
   initMap();
+
+  resetButton.addEventListener('click', resetButtonClickHandler);
 }
 
 document.addEventListener('DOMContentLoaded', contentLoadHandler);

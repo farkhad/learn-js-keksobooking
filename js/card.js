@@ -128,4 +128,4 @@ const renderAds = (ads = []) => {
   return cardsFragment;
 };
 
-export { renderAd };
+export { renderAd, renderAds };
