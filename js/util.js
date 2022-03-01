@@ -1,3 +1,7 @@
+const THOUSANDS_SEPARATOR = ' ';
+
+const ALERT_SHOW_TIME = 5000;
+
 /**
  * Возвращает случайное целое число из переданного диапазона включительно
  * Решение https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random#getting_a_random_integer_between_two_values_inclusive
@@ -69,8 +73,44 @@ const getRandomArrayElement = (arr) => arr[getRandomInt(0, arr.length - 1)];
  * @param String sep
  * @returns String
  */
-const formatNumber = (x, sep = '') => {
+const formatNumber = (x, sep = THOUSANDS_SEPARATOR) => {
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, sep);
 }
 
-export { getRandomInt, getRandomFloat, getRandomArrayElement, formatNumber };
+/**
+ * https://up.htmlacademy.ru/profession/frontender-lite/1/lite-javascript/1/demos/5825#18
+ *
+ * @param String message
+ */
+const showAlert = (message) => {
+  const alertContainer = document.createElement('div');
+  alertContainer.style.zIndex = 100;
+  alertContainer.style.position = 'absolute';
+  alertContainer.style.left = 0;
+  alertContainer.style.top = 0;
+  alertContainer.style.right = 0;
+  alertContainer.style.padding = '10px 3px';
+  alertContainer.style.fontSize = '30px';
+  alertContainer.style.textAlign = 'center';
+  alertContainer.style.backgroundColor = 'red';
+
+  alertContainer.textContent = message;
+
+  document.body.append(alertContainer);
+
+  setTimeout(() => {
+    alertContainer.remove();
+  }, ALERT_SHOW_TIME);
+}
+
+/**
+ * Checks if key pressed was Escape button
+ *
+ * @param Event evt
+ * @returns Boolean
+ */
+const isEscEvent = (evt) => {
+  return evt.key === 'Escape' || evt.key === 'Esc';
+};
+
+export { getRandomInt, getRandomFloat, getRandomArrayElement, formatNumber, showAlert, isEscEvent };

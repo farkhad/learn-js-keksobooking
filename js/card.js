@@ -1,3 +1,4 @@
+import { formatNumber } from './util.js';
 const PRICE_DESCRIPTION = '₽/ночь';
 
 const housingType = {
@@ -52,9 +53,9 @@ const renderAd = (ad) => {
     hideElement(address);
   }
 
-  if (ad.offer.price) {
+  if ('price' in ad.offer) {
     // Б27. Для вставки пользовательских строк (имён, фамилий и так далее) использован textContent
-    price.textContent = ad.offer.price;
+    price.textContent = formatNumber(ad.offer.price);
     price.appendChild(priceDescription.cloneNode(true));
   } else {
     hideElement(price);
@@ -78,7 +79,7 @@ const renderAd = (ad) => {
     hideElement(time);
   }
 
-  if (ad.offer.features.length) {
+  if (ad.offer.features && ad.offer.features.length) {
     features.forEach((feature) => hideElement(feature));
     ad.offer.features.forEach((feature) => card.querySelector(`.popup__feature--${feature}`).classList.remove('hidden'));
   } else {
@@ -91,7 +92,7 @@ const renderAd = (ad) => {
     hideElement(description);
   }
 
-  if (ad.offer.photos.length) {
+  if (ad.offer.photos && ad.offer.photos.length) {
     ad.offer.photos.forEach((photoUrl) => {
       const photo = photoTemplate.cloneNode(false);
       photo.src = photoUrl;

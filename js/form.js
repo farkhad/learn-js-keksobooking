@@ -1,6 +1,5 @@
+import { sendData } from './api.js';
 import { formatNumber } from './util.js';
-
-const THOUSANDS_SEPARATOR = ' ';
 
 const ERR_REQUIRED_FIELD = 'Пожалуйста, заполните это поле';
 const ERR_LENGTHEN = 'Пожалуйста, удлините этот текст до {MIN_LEN} или {MAX_LEN} символов (в настоящее время вы используете {CUR_LEN} симв.).';
@@ -64,9 +63,8 @@ if (priceField.min < minPrice) {
  */
 const updateMinPrice = () => {
   minPrice = priceMap[housingTypeField.value];
-  priceField.placeholder = formatNumber(minPrice, THOUSANDS_SEPARATOR);
+  priceField.placeholder = formatNumber(minPrice);
   priceField.min = minPrice;
-  priceField.checkValidity();
 };
 
 /**
@@ -83,6 +81,125 @@ const syncTimeInOut = (timeFieldChanged = timeInField, timeFieldToChange = timeO
 };
 
 /**
+ * Checks whether Guests number is within limits for Rooms number
+ *
+ * @returns Boolean
+ */
+const checkCapacity = () => {
+  const roomsNumber = Number(roomsField.options[roomsField.selectedIndex].value);
+  const allowedCapacity = Capacity[roomsNumber] || Capacity.NO_GUESTS;
+  const capacity = Number(guestsField.options[guestsField.selectedIndex].value);
+
+  return allowedCapacity.includes(capacity);
+};
+
+/**
+ * Returns error message for Number Of Guests field if exists
+ *
+ * @returns String
+ */
+const getCapacityErrorMessage = () => {
+  return checkCapacity() ? '' : Capacity.ERR_CAPACITY;
+};
+
+/**
+ * Returns error message for Title field if exists
+ *
+ * @returns String
+ */
+const getTitleErrorMessage = () => {
+  const validity = titleField.validity;
+
+  let errorMessage = '';
+
+  if (validity.valueMissing) {
+    errorMessage = ERR_REQUIRED_FIELD;
+  } else if (validity.tooShort) {
+    errorMessage = ERR_LENGTHEN
+      .replace(Title.MIN_LEN_PLACEHOLDER, Title.MIN_LEN)
+      .replace(Title.MAX_LEN_PLACEHOLDER, Title.MAX_LEN)
+      .replace(Title.CUR_LEN_PLACEHOLDER, titleField.value.length);
+  }
+
+  return errorMessage;
+};
+
+/**
+ * Returns error message for Price field if exists
+ *
+ * @returns String
+ */
+const getPriceErrorMessage = () => {
+  const validity = priceField.validity;
+  let errorMessage = '';
+
+  if (validity.valueMissing) {
+    errorMessage = ERR_REQUIRED_FIELD;
+  } else if (validity.rangeUnderflow) {
+    errorMessage = ERR_PRICE_LOW.replace(Price.MIN_PLACEHOLDER, formatNumber(minPrice));
+  } else if (validity.rangeOverflow) {
+    errorMessage = ERR_PRICE_HIGH.replace(Price.MAX_PLACEHOLDER, formatNumber(maxPrice));
+  }
+
+  return errorMessage;
+};
+
+const getCustomErrorMessage = (field) => {
+  let errorMessage = '';
+
+  switch (field) {
+    case titleField:
+      errorMessage = getTitleErrorMessage();
+      break;
+
+    case priceField:
+      errorMessage = getPriceErrorMessage();
+      break;
+
+    case guestsField:
+      errorMessage = getCapacityErrorMessage();
+      break;
+
+    default:
+      errorMessage = 'unknown error';
+  }
+
+  return errorMessage;
+};
+
+const inputHandler = (evt) => evt.target.reportValidity();
+const invalidHandler = (evt) => evt.target.setCustomValidity(getCustomErrorMessage(evt.target));
+
+const titleInputHandler = inputHandler;
+const titleInvalidHandler = invalidHandler;
+
+/**
+ * Callback for onChange event on housing type field
+ */
+const housingTypeChangeHandler = () => {
+  updateMinPrice();
+  priceField.reportValidity();
+}
+
+const priceInputHandler = inputHandler;
+const priceInvalidHandler = invalidHandler;
+
+/**
+ * Callback for 'change' event of Rooms number field
+ * Explicitly setting custom error message at 'change' event,
+ * since guestField doesn't have validation rules present in HTML-tag
+ */
+const roomsChangeHandler = () => {
+  guestsField.setCustomValidity(getCustomErrorMessage(guestsField));
+  guestsField.reportValidity();
+};
+const guestsChangeHandler = () => {
+  guestsField.setCustomValidity(getCustomErrorMessage(guestsField));
+  guestsField.reportValidity();
+};
+const guestsInvalidHandler = invalidHandler;
+
+/**
  * Callback for Check In field's onChange event
  */
 const timeInChangeHandler = () => syncTimeInOut();
@@ -93,118 +210,32 @@ const timeInChangeHandler = () => syncTimeInOut();
 const timeOutChangeHandler = () => syncTimeInOut(timeOutField, timeInField);
 
 /**
- * Callback for onChange event on housing type field
+ * Set Advertisement Form's event listeners
  */
-const housingTypeChangeHandler = () => {
+const setAdFormListeners = () => {
   updateMinPrice();
-  triggerValidation(priceField);
-}
-
-/**
- * Triggers 'invalid' event on element
- *
- * @param HTMLElement element
- */
-const triggerValidation = (element) => {
-  element.setCustomValidity('');
-  element.reportValidity();
-}
-
-/**
- * Triggers 'invalid' event on Guests field.
- * Sets error message at domcontentloaded w/o reporting to user.
- *
- * @param Boolean reportValidity
- */
-const triggerCapacityValidation = (reportValidity = true) => {
-  guestsField.setCustomValidity(Capacity.ERR_CAPACITY);
-
-  if (reportValidity) {
-    guestsField.reportValidity();
-  }
-};
-
-const validateCapacity = () => {
-  const roomsNumber = Number(roomsField.options[roomsField.selectedIndex].value);
-  const allowedCapacity = Capacity[roomsNumber] || Capacity.NO_GUESTS;
-  const capacity = Number(guestsField.options[guestsField.selectedIndex].value);
-
-  if (!allowedCapacity.includes(capacity)) {
-    guestsField.setCustomValidity(Capacity.ERR_CAPACITY);
-  } else {
-    guestsField.setCustomValidity('');
-  }
-};
-
-/**
- * Callback for onChange event of Rooms number field
- */
-const roomsChangeHandler = () => triggerCapacityValidation();
-const roomsInvalidHandler = () => validateCapacity();
-
-const guestsChangeHandler = () => triggerCapacityValidation();
-const guestsInvalidHandler = () => validateCapacity();
-
-/**
- * Validates advertisement's title
- */
-const validateTitle = () => {
-  const titleLen = titleField.value.length;
-
-  if (titleField.validity.valueMissing) {
-    titleField.setCustomValidity(ERR_REQUIRED_FIELD);
-  } else if (titleLen < Title.MIN_LEN) {
-    titleField.setCustomValidity(ERR_LENGTHEN
-      .replace(Title.MIN_LEN_PLACEHOLDER, Title.MIN_LEN)
-      .replace(Title.MAX_LEN_PLACEHOLDER, Title.MAX_LEN)
-      .replace(Title.CUR_LEN_PLACEHOLDER, titleLen));
-  }
-};
-
-const titleInputHandler = () => triggerValidation(titleField);
-const titleInvalidHandler = () => validateTitle();
-
-/**
- * Validates advertisement's price
- */
-const validatePrice = () => {
-  let price = Number(priceField.value);
-
-  if (priceField.validity.valueMissing) {
-    priceField.setCustomValidity(ERR_REQUIRED_FIELD);
-  } else if (price < minPrice) {
-    priceField.setCustomValidity(ERR_PRICE_LOW.replace(Price.MIN_PLACEHOLDER, minPrice));
-  } else if (price > maxPrice) {
-    priceField.setCustomValidity(ERR_PRICE_HIGH.replace(Price.MAX_PLACEHOLDER, formatNumber(maxPrice, THOUSANDS_SEPARATOR)));
-  }
-};
-
-const priceInputHandler = () => triggerValidation(priceField);
-const priceInvalidHandler = () => validatePrice();
-
-/**
- * Callback function for DOMContentLoaded event
- */
-const contentLoadHandler = () => {
-  updateMinPrice();
-
-  housingTypeField.addEventListener('change', housingTypeChangeHandler);
-  timeInField.addEventListener('change', timeInChangeHandler);
-  timeOutField.addEventListener('change', timeOutChangeHandler);
-
-  roomsField.addEventListener('change', roomsChangeHandler);
-  roomsField.addEventListener('invalid', roomsInvalidHandler);
-
-  guestsField.addEventListener('change', guestsChangeHandler);
-  guestsField.addEventListener('invalid', guestsInvalidHandler);
 
   titleField.addEventListener('input', titleInputHandler);
   titleField.addEventListener('invalid', titleInvalidHandler);
 
+  housingTypeField.addEventListener('change', housingTypeChangeHandler);
   priceField.addEventListener('input', priceInputHandler);
   priceField.addEventListener('invalid', priceInvalidHandler);
 
-  triggerCapacityValidation(false);
+  roomsField.addEventListener('change', roomsChangeHandler);
+  guestsField.addEventListener('change', guestsChangeHandler);
+  guestsField.addEventListener('invalid', guestsInvalidHandler);
+
+  timeInField.addEventListener('change', timeInChangeHandler);
+  timeOutField.addEventListener('change', timeOutChangeHandler);
 };
 
-document.addEventListener('DOMContentLoaded', contentLoadHandler);
+const setAdFormSubmit = (onSuccess, onError) => {
+  adForm.addEventListener('submit', (evt) => {
+    evt.preventDefault();
+
+    sendData(onSuccess, onError, new FormData(adForm));
+  });
+};
+
+export { setAdFormSubmit, setAdFormListeners };

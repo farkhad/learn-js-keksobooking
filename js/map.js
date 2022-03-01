@@ -1,6 +1,8 @@
-import './form.js';
-import { createAds } from './data.js';
+import { openModalSuccess, openModalError } from './modal.js';
+import { setAdFormSubmit, setAdFormListeners } from './form.js';
 import { renderAd } from './card.js';
+import { getData } from './api.js';
+import { showAlert } from './util.js';
 
 const MapConfig = {
   TOKYO: [35.658581, 139.745438],
@@ -72,16 +74,11 @@ const setAddress = (addr = MapConfig.TOKYO) => addrField.value = addr.join(', ')
  * Callback for event fired on map load by LeafLet lib
  */
 const mapLoadHandler = () => {
-  /*
-  5.10. Форма, с помощью которой производится фильтрация похожих объявлений на момент открытия страницы, заблокирована и становится доступной только после окончания загрузки всех похожих объявлений, которые в свою очередь начинают загружаться только после загрузки и успешной инициализации карты.
-  */
   addMainPinMarker();
 
   setAdFormDisabledTo(false);
 
   addMarkers();
-
-  setFilterFormDisabledTo(false);
 };
 
 /**
@@ -127,22 +124,25 @@ const addMarkers = () => {
     iconAnchor: MapConfig.ICON_ANCHOR,
   });
 
-  const ads = createAds();
-  ads.forEach((ad) => {
-    const marker = L.marker([ad.location.x, ad.location.y], { icon });
-    marker.bindPopup(renderAd(ad));
-    marker.addTo(map);
-  });
+  getData((ads) => {
+    const markers = [];
+
+    ads.forEach((ad) => {
+      const marker = L.marker([ad.location.lat, ad.location.lng], { icon });
+      marker.bindPopup(renderAd(ad));
+      markers.push(marker);
+    });
+
+    L.layerGroup(markers).addTo(map);
+
+    setFilterFormDisabledTo(false);
+  }, showAlert);
 }
 
 /**
- * Callback when user clicks "Reset" button
- *
- * @param Event evt
+ * Reset Filter and Place Advertisement forms
  */
-const resetButtonClickHandler = (evt) => {
-  evt.preventDefault();
-
+const resetForms = () => {
   adForm.reset();
   filterForm.reset();
 
@@ -154,12 +154,30 @@ const resetButtonClickHandler = (evt) => {
 
   // instead of map.setView(...);
   map.flyTo(MapConfig.TOKYO, MapConfig.MAX_ZOOM_LEVEL);
+};
+
+/**
+ * Callback when user clicks "Reset" button
+ *
+ * @param Event evt
+ */
+const resetButtonClickHandler = (evt) => {
+  evt.preventDefault();
+
+  resetForms();
 }
 
 const contentLoadHandler = () => {
   initMap();
 
   resetButton.addEventListener('click', resetButtonClickHandler);
+
+  setAdFormSubmit(() => {
+    resetForms();
+    openModalSuccess();
+  }, openModalError);
+
+  setAdFormListeners();
 }
 
 document.addEventListener('DOMContentLoaded', contentLoadHandler);
