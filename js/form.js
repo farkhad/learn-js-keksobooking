@@ -1,3 +1,4 @@
+import './avatar.js';
 import { sendData } from './api.js';
 import { formatNumber } from './util.js';
 
@@ -238,4 +239,4 @@ const setAdFormSubmit = (onSuccess, onError) => {
   });
 };
 
-export { setAdFormSubmit, setAdFormListeners };
+export { setAdFormSubmit, setAdFormListeners, Price };

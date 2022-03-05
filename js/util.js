@@ -1,6 +1,6 @@
 const THOUSANDS_SEPARATOR = ' ';
 
-const ALERT_SHOW_TIME = 5000;
+const DEFAULT_DEBOUNCE_DELAY = 100;
 
 /**
  * Возвращает случайное целое число из переданного диапазона включительно
@@ -78,32 +78,6 @@ const formatNumber = (x, sep = THOUSANDS_SEPARATOR) => {
 }
 
 /**
- * https://up.htmlacademy.ru/profession/frontender-lite/1/lite-javascript/1/demos/5825#18
- *
- * @param String message
- */
-const showAlert = (message) => {
-  const alertContainer = document.createElement('div');
-  alertContainer.style.zIndex = 100;
-  alertContainer.style.position = 'absolute';
-  alertContainer.style.left = 0;
-  alertContainer.style.top = 0;
-  alertContainer.style.right = 0;
-  alertContainer.style.padding = '10px 3px';
-  alertContainer.style.fontSize = '30px';
-  alertContainer.style.textAlign = 'center';
-  alertContainer.style.backgroundColor = 'red';
-
-  alertContainer.textContent = message;
-
-  document.body.append(alertContainer);
-
-  setTimeout(() => {
-    alertContainer.remove();
-  }, ALERT_SHOW_TIME);
-}
-
-/**
  * Checks if key pressed was Escape button
  *
  * @param Event evt
@@ -113,4 +87,27 @@ const isEscEvent = (evt) => {
   return evt.key === 'Escape' || evt.key === 'Esc';
 };
 
-export { getRandomInt, getRandomFloat, getRandomArrayElement, formatNumber, showAlert, isEscEvent };
+/**
+ *
+ * @param Function cb
+ * @param Number timeout
+ * @returns
+ */
+const debounce = (cb, timeout = DEFAULT_DEBOUNCE_DELAY) => {
+  let timeoutId;
+  return (...args) => {
+    // Задержка реализуется с помощью setTimeout
+    // Если вызов произошёл до окончания задержки, таймер начинает отсчёт заново
+    const delayed = () => {
+      cb(...args);
+      timeoutId = null;
+    }
+
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    timeoutId = setTimeout(delayed, timeout);
+  };
+};
+
+export { getRandomInt, getRandomFloat, getRandomArrayElement, formatNumber, isEscEvent, debounce };
